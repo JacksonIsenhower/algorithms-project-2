@@ -1,0 +1,154 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// CoinPurse class
+class coinPurse {
+public:
+    vector<int> based;
+    vector<int> coins_bases;
+    int total_coins;
+
+    void fillPurse(vector<int> bases, vector<int> coins, int total = 0) {
+        this->based = bases;
+        this->coins_bases = coins;
+        this->total_coins = total;
+    }
+
+    coinPurse(vector<int> base, vector<int> coins, int total = 1000000000) {
+        based = base;
+        coins_bases = coins;
+        total_coins = total;
+    }
+    coinPurse() {
+        total_coins = 1000000000;
+    }
+
+    coinPurse operator + (coinPurse param) {
+        coinPurse temp;
+        temp.based.resize(based.size());
+        for (int i = 0; i < param.based.size(); i++) {
+            temp.based.at(i) = based.at(i);
+            temp.coins_bases.push_back(coins_bases.at(i) + param.coins_bases.at(i));
+        }
+        temp.total_coins = this->total_coins + param.total_coins;
+        return temp;
+    }
+};
+
+// Set new purse
+coinPurse newPurse(vector<int> bases) {
+    coinPurse purse;
+    purse.based.resize(bases.size());
+    for (int i = 0; i < purse.based.size(); i++) {
+        purse.based.at(i) = bases.at(i);
+        purse.coins_bases.push_back(0);
+    }
+
+    return purse;
+}
+
+
+// The actual recursion magic is here
+coinPurse solveProblem(int problem, vector<coinPurse> &bests) {
+    // Memoized storage
+    if (bests.size() < (problem + 1)) {
+        bests.resize(problem + 1, coinPurse(bests.at(0).based, bests.at(0).coins_bases));
+    }
+
+    // Base case (problem 0)
+    if (problem == 0) {
+        coinPurse base = newPurse(bests.at(0).based);
+        base.total_coins = 0;
+        return base; // When any sub-problem finishes, return the current purse object
+    }
+    // Recursive case (problem and sub-problems)
+    else {
+        if (bests.at(problem).total_coins == 1000000000) {
+            // loop through coin bases at problem size
+            coinPurse res;
+            for (int i = 0; i < bests.at(0).based.size(); i++) {
+                if (problem - bests.at(problem).based.at(i) >= 0) {
+                    coinPurse temp = newPurse(bests.at(0).based);
+                    temp.total_coins = 1;
+                    temp.coins_bases.at(i)++;
+
+                    res = temp + solveProblem((problem - bests.at(0).based.at(i)), bests);
+
+                    if (res.total_coins < bests.at(problem).total_coins) {
+                        bests.at(problem).coins_bases = res.coins_bases;
+                        bests.at(problem).total_coins = res.total_coins;
+                    }
+                }
+            }
+
+            // Return res
+            return res;
+        }
+        else {
+            return bests.at(problem);
+        }
+    }
+}
+
+int main(int argc, char** argv) {
+
+    // Number of bases
+    int num_bases;
+    cin >> num_bases;
+
+    // Set bases array
+    vector<int> bases;
+    bases.resize(num_bases);
+    for (int i = 0; i < num_bases; i++) {
+        cin >> bases.at(i);
+    }
+
+    vector<int> coins(num_bases, 0);
+
+    // Set 2d table for storage
+    vector<vector<int>> dynamic_storage(1, vector<int>(num_bases));
+
+    // Set problems to loop through
+    int num_problems;
+    cin >> num_problems;
+    int problem;
+
+    // Store results
+    vector<string> results(num_problems);
+
+    for (int i = 0; i < num_problems; i++) {
+        cin >> problem;
+
+        // Prep work
+        //coinPurse best = newPurse(bases);
+        results[i] = to_string(problem) + " cents =";  // prep output
+
+        // DO MAGIC!
+        vector<coinPurse> bests(1, coinPurse(bases, coins));
+        solveProblem(problem, bests);
+        //best.fillPurse(currPurse.based, bestPurses.at(problem).coins_bases, bestPurses.at(problem).total_coins);
+
+        // add to output based on results
+        for (int j = bests.at(0).based.size() - 1; j > -1; j--) {
+            if (bests.at(problem).coins_bases.at(j) != 0) {
+                results[i] += " ";
+                results[i] += to_string(bests.at(problem).based.at(j)) +
+                    ":" + to_string(bests.at(problem).coins_bases.at(j));
+            }
+        }
+    }
+
+    // Print results
+    for (int i = 0; i < num_problems; i++) {
+        cout << results[i] << endl;
+    }
+
+    return 0;
+
+    // 1) Recursion (Jacob) and Bottom-Up (Jackson)
+    // 2) Memoization and Timing
+    // 3) Report
+}
