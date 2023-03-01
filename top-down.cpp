@@ -6,16 +6,16 @@ using namespace std;
 
 // CoinPurse class
 class coinPurse {
-    public:
-        vector<int> based;
-        vector<int> coins_bases;
-        int total_coins = 0;
+public:
+    vector<int> based;
+    vector<int> coins_bases;
+    int total_coins = 0;
 
-        void fillPurse(vector<int> bases, vector<int> coins, int total = 0) {
-            this->based = bases;
-            this->coins_bases = coins;
-            this->total_coins = total;
-        }
+    void fillPurse(vector<int> bases, vector<int> coins, int total = 0) {
+        this->based = bases;
+        this->coins_bases = coins;
+        this->total_coins = total;
+    }
 };
 
 // Set new purse
@@ -32,7 +32,7 @@ coinPurse newPurse(vector<int> bases) {
 
 
 // The actual recursion magic is here
-coinPurse solveProblem(int problem, coinPurse &bestPurse, coinPurse currPurse) {
+coinPurse solveProblem(int problem, coinPurse& bestPurse, coinPurse currPurse) {
     // create murse with currPurse's values (want values, not pointer) -- gotta represent men's fashion too :)
     coinPurse murse;
     murse.fillPurse(currPurse.based, currPurse.coins_bases, currPurse.total_coins);
@@ -91,23 +91,24 @@ int main(int argc, char** argv) {
     // Store results
     vector<string> results(num_problems);
 
-    for(int i = 0; i < num_problems; i++) {
+    for (int i = 0; i < num_problems; i++) {
         cin >> problem;
 
         // Prep work
         coinPurse currPurse = newPurse(bases);
         coinPurse bestPurse = currPurse;
         bestPurse.total_coins = 1000000000; // set to rediculously large value
-        results[i] = to_string(problem) + " cents = ";  // prep output
-        
+        results[i] = to_string(problem) + " cents =";  // prep output
+
         // DO MAGIC!
         solveProblem(problem, bestPurse, currPurse);
 
         // add to output based on results
         for (int j = bestPurse.based.size() - 1; j > -1; j--) {
             if (bestPurse.coins_bases.at(j) != 0) {
-                results[i] += to_string(bestPurse.based.at(j)) + ":" + to_string(bestPurse.coins_bases.at(j));
-                if (j != 0) results[i] += " ";
+                results[i] += " ";
+                results[i] += to_string(bestPurse.based.at(j)) + 
+                    ":" + to_string(bestPurse.coins_bases.at(j));
             }
         }
     }
